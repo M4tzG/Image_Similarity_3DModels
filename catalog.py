@@ -1,85 +1,78 @@
 import os
 import json
 
-def catalogar_renders(pasta_principal_renders="Renders", arquivo_json_saida="Image_Similarity/renders_map.json"):
+def cat_renders(main_folder="Renders", json_output="Image_Similarity/renders_map.json"):
     """
-    Cataloga imagens de renderização de subpastas em um arquivo JSON.
+    'Cataloga' imagens de renderizacao de subpastas em um arquivo JSON.
 
     Args:
-        pasta_principal_renders (str): O nome da pasta contendo as subpastas dos objetos renderizados.
-                                       Espera-se que esta pasta esteja no mesmo diretório do script.
-        arquivo_json_saida (str): O nome do arquivo JSON a ser gerado.
+        main_folder (str): O nome da pasta contendo as subpastas dos objetos renderizados
+        json_output (str): arquivo json gerado.
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__)) # Pega o diretório do script
-    caminho_pasta_renders = os.path.join(script_dir, pasta_principal_renders)
+    script_dir = os.path.dirname(os.path.abspath(__file__)) # Pega o diretorio do script
+    render_path = os.path.join(script_dir, main_folder)
 
-    dados_finais = {}
-    extensoes_imagem_validas = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp']
+    data = {}
+    valid_extensions = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp']
 
-    if not os.path.isdir(caminho_pasta_renders):
-        print(f"ERRO: A pasta '{pasta_principal_renders}' não foi encontrada em '{script_dir}'.")
-        print("Por favor, crie a pasta 'renders' e coloque as subpastas dos seus objetos dentro dela,")
-        print("ou ajuste o parâmetro 'pasta_principal_renders' no script.")
+    if not os.path.isdir(render_path):
+        print(f"ERRO: A pasta '{main_folder}' nao foi encontrada em '{script_dir}'.")
         return
 
-    # Lista todas as entradas na pasta 'renders'
+    # pastas em 'Render'
     try:
-        nomes_objetos = [nome for nome in os.listdir(caminho_pasta_renders)
-                         if os.path.isdir(os.path.join(caminho_pasta_renders, nome))]
+        obj_name = [nome for nome in os.listdir(render_path)
+                         if os.path.isdir(os.path.join(render_path, nome))]
     except OSError as e:
-        print(f"ERRO ao acessar a pasta '{caminho_pasta_renders}': {e}")
+        print(f"ERRO ao acessar a pasta '{render_path}': {e}")
         return
         
-    if not nomes_objetos:
-        print(f"Nenhuma subpasta (objeto) encontrada em '{caminho_pasta_renders}'.")
+    if not obj_name:
+        print(f"Nenhuma subpasta (objeto) encontrada em '{render_path}'.")
         return
 
-    print(f"Encontradas as seguintes pastas de objetos: {', '.join(nomes_objetos)}")
+    print(f"Encontradas as seguintes pastas de objetos: {', '.join(obj_name)}")
 
-    for nome_objeto in nomes_objetos:
-        id_render = nome_objeto  # O nome da pasta é o ID
-        caminho_pasta_objeto = os.path.join(caminho_pasta_renders, nome_objeto)
+    for name in obj_name:
+        id_render = name  # nome da pasta eh o id
+        obj_dir_path = os.path.join(render_path, name)
         
-        lista_imagens = []
+        img_list = []
         try:
-            arquivos_na_pasta_objeto = os.listdir(caminho_pasta_objeto)
+            imgs_obj_dir = os.listdir(obj_dir_path)
         except OSError as e:
-            print(f"AVISO: Não foi possível acessar os arquivos na pasta '{caminho_pasta_objeto}': {e}. Pulando esta pasta.")
+            print(f"AVISO: impossivel acessar os arquivos na pasta '{obj_dir_path}': {e}")
             continue
 
-        for nome_arquivo in arquivos_na_pasta_objeto:
-            # Verifica se é um arquivo e se tem uma extensão de imagem válida
-            if os.path.isfile(os.path.join(caminho_pasta_objeto, nome_arquivo)):
-                nome_base, extensao = os.path.splitext(nome_arquivo)
-                if extensao.lower() in extensoes_imagem_validas:
-                    # Cria o caminho relativo a partir da pasta onde o script está
-                    # ex: renders/NomeDoObjeto/imagem.png
-                    caminho_absoluto_imagem = os.path.join(caminho_pasta_renders, nome_objeto, nome_arquivo)
-                    lista_imagens.append(caminho_absoluto_imagem.replace("\\", "/"))
+        for img_name in imgs_obj_dir:
+            if os.path.isfile(os.path.join(obj_dir_path, img_name)):
+                base_name, extension = os.path.splitext(img_name)
+                if extension.lower() in valid_extensions:
+                    abs_path = os.path.join(render_path, name, img_name)
+                    img_list.append(abs_path.replace("\\", "/"))
         
-        if not lista_imagens:
-            print(f"AVISO: Nenhuma imagem encontrada na pasta '{caminho_pasta_objeto}'.")
+        if not img_list:
+            print(f"AVISO: Nenhuma imagem encontrada na pasta '{obj_dir_path}'.")
         
-        dados_finais[id_render] = {
-            "model_3d_path": "caminho/para/o/modelo/3d",  # Placeholder
-            "images": sorted(lista_imagens) # Ordena para consistência
+        data[id_render] = {
+            "model_3d_path": "caminho/para/o/modelo/3d",
+            "images": sorted(img_list)
         }
-        print(f"Processada pasta: '{nome_objeto}', {len(lista_imagens)} imagens encontradas.")
+        print(f"Processada pasta: '{name}', {len(img_list)} imagens encontradas.")
 
-    # Salvar o dicionário como JSON
-    caminho_arquivo_json = os.path.join(script_dir, arquivo_json_saida)
+    # dict to json
+    json_output = os.path.join(script_dir, json_output)
     try:
-        with open(caminho_arquivo_json, 'w', encoding='utf-8') as f:
-            json.dump(dados_finais, f, ensure_ascii=False, indent=2) # indent=2 para formatação legível
-        print(f"\nArquivo JSON '{arquivo_json_saida}' criado com sucesso em '{script_dir}'.")
-        print(f"Total de {len(dados_finais)} IDs de render processados.")
+        with open(json_output, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"\nArquivo JSON '{json_output}' criado com sucesso em '{script_dir}'.")
+        print(f"Total de {len(data)} IDs de render processados.")
     except IOError as e:
-        print(f"ERRO ao salvar o arquivo JSON '{caminho_arquivo_json}': {e}")
+        print(f"ERRO ao salvar o arquivo JSON '{json_output}': {e}")
     except TypeError as e:
         print(f"ERRO de tipo ao tentar serializar para JSON: {e}")
 
 
 if __name__ == "__main__":
-    # Você pode alterar o nome da pasta principal de renders e o nome do arquivo de saída aqui, se desejar.
-    # Exemplo: catalogar_renders(pasta_principal_renders="minhas_fotos", arquivo_json_saida="catalogo.json")
-    catalogar_renders()
+    # cat_renders(main_folder="minhas_fotos", json_output="catalogo.json")
+    cat_renders()
