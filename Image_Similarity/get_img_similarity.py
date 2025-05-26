@@ -9,7 +9,7 @@ from datasets import Dataset, Image as HFImage
 from torchvision import transforms
 
 
-# --- 1. configuracao geral ---
+# --- configuracao geral ---
 model_ckpt = "nateraw/vit-base-beans" # ajustar posteriormente (esse foi otimizado para o dataset beans)
 processor = AutoImageProcessor.from_pretrained(model_ckpt)
 model = AutoModel.from_pretrained(model_ckpt)
@@ -21,7 +21,7 @@ model.eval()
 EMBEDDING_BATCH_SIZE = 32
 
 
-# --- 2. Image Transformation Chain ---
+# --- Image Transformation Chain ---
 try:
     if hasattr(processor, 'size') and "shortest_edge" in processor.size:
         image_size = processor.size["shortest_edge"]
@@ -43,7 +43,7 @@ transformation_chain = transforms.Compose(
 )
 
 
-# --- 3. load das imagens utilizadas para o modelo  ---
+# --- load das imagens utilizadas para o modelo  ---
 # corresponde ao "json: 'modelo' : 'imagens'" 
 def load_dataset_from_json_map(json_file_path):
     """
@@ -84,7 +84,7 @@ def load_dataset_from_json_map(json_file_path):
     return hf_dataset, source_3d_model_details
 
 
-# --- 4. Embedding Extraction ---
+# --- Embedding Extraction ---
 def extract_embeddings_from_dataset(pytorch_model: torch.nn.Module):
     """
     Computa os embeddings das imagens do dataset
@@ -109,7 +109,7 @@ def extract_embeddings_from_dataset(pytorch_model: torch.nn.Module):
     return preprocess_batch
 
 
-# --- 5. Similaridade de cosseno ---
+# --- Similaridade de cosseno ---
 def compute_cosine_scores(emb_one, emb_two):
     """
     Calcula a similaridade de cosseno entre as imagens
@@ -121,7 +121,7 @@ def compute_cosine_scores(emb_one, emb_two):
     return scores.numpy().tolist()
 
 
-# --- 6. Resultados ---
+# --- Resultados ---
 def find_top_similar_images(
     query_pil_image: Image.Image,
     dataset_embeddings_tensor: torch.Tensor,
@@ -153,7 +153,7 @@ def find_top_similar_images(
 
     return results_sorted[:top_k]
 
-# --- 7. Main ---
+# --- Main ---
 if __name__ == "__main__":
     # === Paths ===
     your_json_map_file = "renders_map.json" # caminho para o json
