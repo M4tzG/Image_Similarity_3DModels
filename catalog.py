@@ -1,7 +1,7 @@
 import os
 import json
 
-def catalogar_renders(pasta_principal_renders="renders", arquivo_json_saida="Image_Similarity/renders_map.json"):
+def catalogar_renders(pasta_principal_renders="Renders", arquivo_json_saida="Image_Similarity/renders_map.json"):
     """
     Cataloga imagens de renderização de subpastas em um arquivo JSON.
 
@@ -54,9 +54,8 @@ def catalogar_renders(pasta_principal_renders="renders", arquivo_json_saida="Ima
                 if extensao.lower() in extensoes_imagem_validas:
                     # Cria o caminho relativo a partir da pasta onde o script está
                     # ex: renders/NomeDoObjeto/imagem.png
-                    caminho_relativo_imagem = os.path.join(pasta_principal_renders, nome_objeto, nome_arquivo)
-                    # Normaliza as barras para o padrão do OS (opcional, mas bom para consistência)
-                    lista_imagens.append(caminho_relativo_imagem.replace("\\", "/")) 
+                    caminho_absoluto_imagem = os.path.join(caminho_pasta_renders, nome_objeto, nome_arquivo)
+                    lista_imagens.append(caminho_absoluto_imagem.replace("\\", "/"))
         
         if not lista_imagens:
             print(f"AVISO: Nenhuma imagem encontrada na pasta '{caminho_pasta_objeto}'.")
